@@ -3,8 +3,9 @@
 from flask import request, session, jsonify, make_response
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
+from flask_jwt_extended import create_access_token, get_jwt_identity, verify_jwt_in_request
 
-from config import app, db, api
+from config import app, db, api, jwt
 from models import User, Recipe, UserSchema, RecipeSchema
 
 @app.before_request
@@ -37,15 +38,16 @@ class Signup(Resource):
         try:
             db.session.add(user)
             db.session.commit()
-            session['user_id'] = user.id
-            return UserSchema().dump(user), 201
+            access_token = create_access_token(identity=str(user.id))
+            return make_response(jsonify(token=access_token, user=UserSchema().dump(user)), 200)
         except IntegrityError:
             return {'errors': ['422 Unprocessable Entity']}, 422
 
-class CheckSession(Resource):
+class WhoAmI(Resource):
     def get(self):
+        user_id = get_jwt_identity()
 
-        user = User.query.filter(User.id == session['user_id']).first()
+        user = User.query.filter(User.id == user_id).first()
         
         return UserSchema().dump(user), 200
 
@@ -59,16 +61,16 @@ class Login(Resource):
         user = User.query.filter(User.username == username).first()
 
         if user and user.authenticate(password):
-            session['user_id'] = user.id
-            return UserSchema().dump(user), 200
+            access_token = create_access_token(identity=str(user.id))
+            return make_response(jsonify(token=access_token, user=UserSchema().dump(user)), 200)
 
         return {'errors': ['401 Unauthorized']}, 401
 
-class Logout(Resource):
-    def delete(self):
+# class Logout(Resource):
+#     def delete(self):
 
-        session['user_id'] = None
-        return {}, 204
+#         session['user_id'] = None
+#         return {}, 204
 
 class RecipeIndex(Resource):
     def get(self):
@@ -95,9 +97,9 @@ class RecipeIndex(Resource):
             return {'errors': ['422 Unprocessable Entity']}, 422
 
 api.add_resource(Signup, '/signup', endpoint='signup')
-api.add_resource(CheckSession, '/check_session', endpoint='check_session')
+api.add_resource(WhoAmI, '/me', endpoint='check_session')
 api.add_resource(Login, '/login', endpoint='login')
-api.add_resource(Logout, '/logout', endpoint='logout')
+# api.add_resource(Logout, '/logout', endpoint='logout')
 api.add_resource(RecipeIndex, '/recipes', endpoint='recipes')
 
 
