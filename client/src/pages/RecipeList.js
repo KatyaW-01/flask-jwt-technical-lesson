@@ -8,10 +8,14 @@ function RecipeList() {
   const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
-    fetch("/recipes")
-      .then((r) => r.json())
-      .then(setRecipes);
-  }, []);
+  fetch("/recipes", {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    }
+  })
+    .then((r) => r.json())
+    .then(setRecipes);
+}, []);
 
   return (
     <Wrapper>

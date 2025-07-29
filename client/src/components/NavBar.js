@@ -10,6 +10,8 @@ function NavBar({ user, setUser }) {
         setUser(null);
       }
     });
+    localStorage.removeItem("token");
+    setUser(null)
   }
 
   return (

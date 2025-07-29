@@ -28,6 +28,7 @@ function NewRecipe({ user }) {
     fetch("/recipes", {
       method: "POST",
       headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
