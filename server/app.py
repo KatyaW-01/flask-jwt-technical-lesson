@@ -85,7 +85,7 @@ class RecipeIndex(Resource):
             title=request_json.get('title'),
             instructions=request_json.get('instructions'),
             minutes_to_complete=request_json.get('minutes_to_complete'),
-            user_id=session['user_id']
+            user_id=get_jwt_identity()
         )
 
         try:
