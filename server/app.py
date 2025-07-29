@@ -15,8 +15,8 @@ def check_if_logged_in():
         'login'
     ]
 
-    if (request.endpoint) not in open_access_list and (not session.get('user_id')):
-        return {'errors': ['401 Unauthorized']}, 401
+    if (request.endpoint) not in open_access_list and (not verify_jwt_in_request()):
+        return {'error': ['401 Unauthorized']}, 401
 
 class Signup(Resource):
     def post(self):
